@@ -124,6 +124,10 @@ class Entity:
         self._pixel_y = y * TILE_SIZE
         self._target_pixel_y = self._pixel_y
 
+    @property
+    def block_movement(self):
+        return self._block_movement
+
 # =====================================================================
 # SUBCLASSES
 # =====================================================================

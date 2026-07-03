@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import numpy as np #type:ignore
 import pygame
 import tile_types
@@ -22,6 +22,13 @@ class GameMap:
 
         self._visible = np.full((width, height), fill_value = False, order="F")
         self._explored = np.full((width, height), fill_value = False, order="F")
+
+    def get_blocking_entity_at_location(self, location_x: int, location_y: int) -> Optional[Entity]:
+        for entity in self._entities:
+            if entity.block_movement and entity.grid_x == location_x and entity.grid_y == location_y:
+                return entity
+            
+        return None
 
     def in_bounds(self, x: int, y: int) -> bool:
         """Return True if x and y are inside of the bounds of this map."""
