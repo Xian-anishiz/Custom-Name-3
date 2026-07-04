@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import copy
 import pygame
+from sprites import *
 from constants import TILE_SIZE
 from typing import TYPE_CHECKING, TypeVar
+from hitbox import Hitbox
 
 if TYPE_CHECKING:
     from game_map import GameMap
@@ -17,11 +19,11 @@ class Entity:
     def __init__(self, 
                  grid_x: int, 
                  grid_y: int, 
-                 color: str, 
+                 sprite: pygame.Surface,
                  name: str = "<Unnamed>",
                  block_movement: bool = False,
                  speed: int = 0,) -> None:
-        self._color = color
+        self._sprite = sprite
         self._name = name
         self._block_movement = block_movement
         
@@ -38,11 +40,11 @@ class Entity:
         self._target_pixel_y = self._pixel_y
 
         self._is_moving = False
+        self._hitbox = Hitbox(self)
         
         # Every entity has a speed. Default is 0 (static entities like items or traps)
         self._speed = speed
 
-    # TODO replace this with a Factory instead of deepcopy
     def spawn(self: T, gamemap: GameMap, x: int, y: int) -> T:
         """spawnh a copy of this instance at the given location"""
         clone = copy.deepcopy(self)
@@ -85,9 +87,19 @@ class Entity:
         if self._pixel_x == self._target_pixel_x and self._pixel_y == self._target_pixel_y:
             self._is_moving = False
 
+        self._hitbox.update()
+
     def draw(self, screen: pygame.Surface) -> None:
-        raise NotImplementedError
+        screen.blit(self._sprite, self.pixel_pos)
     
+    @property
+    def name(self):
+        return self._name
+    
+    @property
+    def hitbox(self):
+        return self._hitbox
+
     @property
     def center(self) -> tuple[int, int]:
         raise NotImplementedError
@@ -97,12 +109,12 @@ class Entity:
         return self._is_moving
     
     @property
-    def pos(self) -> tuple[int, int]:
-        return (int(self._pixel_x), int(self._pixel_y))
+    def pixel_x(self) -> int:
+        return int(self._pixel_x)
     
     @property
-    def color(self):
-        return self._color
+    def pixel_y(self) -> int:
+        return int(self._pixel_y)
     
     @property
     def grid_x(self) -> int:
@@ -113,6 +125,7 @@ class Entity:
         self._grid_x = x
         self._pixel_x = x * TILE_SIZE
         self._target_pixel_x = self._pixel_x
+        self._hitbox.update()
 
     @property
     def grid_y(self) -> int:
@@ -123,10 +136,31 @@ class Entity:
         self._grid_y = y
         self._pixel_y = y * TILE_SIZE
         self._target_pixel_y = self._pixel_y
+        self._hitbox.update()
 
     @property
     def block_movement(self):
         return self._block_movement
+    
+    @property
+    def sprite(self):
+        return self._sprite
+    
+    @property
+    def width(self):
+        return self._sprite.get_width()
+    
+    @property
+    def height(self):
+        return self._sprite.get_height()
+
+    @property
+    def pixel_pos(self):
+        return self._pixel_x, self._pixel_y
+
+    @property
+    def grid_pos(self):
+        return self._grid_x, self._grid_y
 
 # =====================================================================
 # SUBCLASSES
@@ -145,15 +179,12 @@ class Player(Entity):
         super().__init__(
             grid_x=grid_x, 
             grid_y=grid_y, 
-            color="yellow", 
+            sprite = player_sprite, 
             speed=150,
             name=name,
             block_movement=block_movement
         )
         self.radius = radius
-
-    def draw(self, screen: pygame.Surface):
-        pygame.draw.circle(screen, self.color, self.center, self.radius)
 
     @property
     def center(self) -> tuple[int, int]:
@@ -170,14 +201,11 @@ class NPC(Entity):
         super().__init__(
             grid_x=grid_x, 
             grid_y=grid_y, 
-            color="green",
+            sprite=npc_sprite,
             name=name,
             block_movement=block_movement
         )
         self.radius = radius
-
-    def draw(self, screen: pygame.Surface):
-        pygame.draw.circle(screen, self.color, self.center, self.radius)
 
     @property
     def center(self) -> tuple[int, int]:
@@ -194,14 +222,11 @@ class Troll(Entity):
         super().__init__(
             grid_x=grid_x, 
             grid_y=grid_y, 
-            color="red",
+            sprite=troll_sprite,
             name=name,
             block_movement=block_movement
         )
         self.radius = radius
-
-    def draw(self, screen: pygame.Surface):
-        pygame.draw.circle(screen, self.color, self.center, self.radius)
 
     @property
     def center(self) -> tuple[int, int]:
@@ -218,14 +243,11 @@ class Orc(Entity):
         super().__init__(
             grid_x=grid_x, 
             grid_y=grid_y, 
-            color="orange",
+            sprite=orc_sprite,
             name=name,
             block_movement=block_movement
         )
         self.radius = radius
-
-    def draw(self, screen: pygame.Surface):
-        pygame.draw.circle(screen, self.color, self.center, self.radius)
 
     @property
     def center(self) -> tuple[int, int]:

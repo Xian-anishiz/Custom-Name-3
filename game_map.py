@@ -23,16 +23,21 @@ class GameMap:
         self._visible = np.full((width, height), fill_value = False, order="F")
         self._explored = np.full((width, height), fill_value = False, order="F")
 
-    def get_blocking_entity_at_location(self, location_x: int, location_y: int) -> Optional[Entity]:
+    def get_blocking_entity_at_location(self, reference_entity: Entity, g_location_x: int, g_location_y: int) -> Optional[Entity]:
+        target_hitbox = pygame.Rect(g_location_x * self._tile_size, 
+                                    g_location_y * self._tile_size, 
+                                    reference_entity.width, 
+                                    reference_entity.height)
+
         for entity in self._entities:
-            if entity.block_movement and entity.grid_x == location_x and entity.grid_y == location_y:
+            if entity.block_movement and target_hitbox.colliderect(entity.hitbox.hitbox):
                 return entity
             
         return None
 
-    def in_bounds(self, x: int, y: int) -> bool:
-        """Return True if x and y are inside of the bounds of this map."""
-        return 0 <= x < self._width and 0 <= y < self._height
+    def in_bounds(self, p_x: int, p_y: int) -> bool:
+        """Return True if x and y are inside of the bounds of this map. Uses Pixels."""
+        return 0 <= p_x < self._width and 0 <= p_y < self._height
     
     def render(self, screen: pygame.Surface) -> None:
         """
@@ -48,15 +53,15 @@ class GameMap:
             default=tile_types.SHROUD
         )
 
-        for x in range(self._width):
-            for y in range(self._height):
+        for g_x in range(self._width):
+            for g_y in range(self._height):
                 # Extract a single tile's RGB color and coerce numpy scalars to Python ints.
-                bg = tile_graphic[x, y]["bg"]
+                bg = tile_graphic[g_x, g_y]["bg"]
                 bg_color = (int(bg[0]), int(bg[1]), int(bg[2]))
 
                 # 3. Calculate the pixel positions based on your tile-to-pixel ratio
-                pixel_x = x * self._tile_size
-                pixel_y = y * self._tile_size
+                pixel_x = g_x * self._tile_size
+                pixel_y = g_y * self._tile_size
                 
                 # 4. Draw the tile as a solid colored block matching the tutorial's style
                 pygame.draw.rect(

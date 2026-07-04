@@ -1,5 +1,5 @@
 import pygame
-from actions import Action, EscapeAction, MovementAction
+from actions import Action, EscapeAction, BumpAction
 
 class EventHandler:
     def get_actions(self, player_can_move: bool) -> list[Action]:
@@ -27,18 +27,18 @@ class EventHandler:
 
         return actions
     
-    def handle_continuous_input(self) -> list[MovementAction]:
-        actions: list[MovementAction] = []
+    def handle_continuous_input(self) -> list[Action]:
+        actions: list[Action] = []
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            actions.append(MovementAction(0, -1))
+            actions.append(BumpAction(0, -1))
         elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            actions.append(MovementAction(0, 1))
+            actions.append(BumpAction(0, 1))
         elif keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            actions.append(MovementAction(-1, 0))
+            actions.append(BumpAction(-1, 0))
         elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            actions.append(MovementAction(1, 0))
+            actions.append(BumpAction(1, 0))
 
         return actions
     

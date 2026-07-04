@@ -23,13 +23,18 @@ class Engine:
         self._screen = screen
         self.update_fov()
 
+    def handle_enemy_turns(self) -> None:
+        for entity in self.game_map.entities - {self._player}:
+            print(f'The {entity.name} wonders when it will get to take a real turn.')
+
     def handle_events(self) -> None:
         actions = self._event_handler.get_actions(not self._player.is_moving)
 
         for action in actions:
             action.perform(self, self._player)
+            self.handle_enemy_turns()
+            self.update_fov() # Update the FOV before the players next action
 
-        self.update_fov() # Update the FOV before the players next action
 
     def update_fov(self) -> None:
         """Recompute the visible area based pon the players point of view"""
