@@ -35,7 +35,6 @@ class Engine:
             self.handle_enemy_turns()
             self.update_fov() # Update the FOV before the players next action
 
-
     def update_fov(self) -> None:
         """Recompute the visible area based pon the players point of view"""
         self._game_map.visible[:] = tcod.map.compute_fov(
